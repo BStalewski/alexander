@@ -30,7 +30,7 @@ def dir_files(dirname, criterions, all_needed):
                 correct_names.append(full_path)
         else:
             print('Directory {0} in directory {1}'.format(name, dirname))
-            correct_names += dir_files(full_path, full_criterions, all_needed)
+            correct_names += dir_files(full_path, criterions, all_needed)
 
     return correct_names
 

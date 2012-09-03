@@ -27,7 +27,7 @@ class testDir(unittest.TestCase):
 
     def extension_test(self):
         dirname = 'testdir_3'
-        criterions = ['.*py']
+        criterions = ['*.py']
         all_needed = True
         expected = [os.path.join('testdir_3', 'pyfile1.py'),
                     os.path.join('testdir_3', 'pyfile2.py')]
@@ -35,7 +35,7 @@ class testDir(unittest.TestCase):
 
     def subdir_test(self):
         dirname = 'testdir_4'
-        criterions = ['.*py']
+        criterions = ['*.py']
         all_needed = True
         expected = [os.path.join('testdir_4', 'pkg', 'pyfile1.py'),
                     os.path.join('testdir_4', 'pyfile1.py'),
@@ -44,7 +44,7 @@ class testDir(unittest.TestCase):
 
     def many_and_criterions_test(self):
         dirname = 'testdir_5'
-        criterions = ['.*py.*', '.*2.*']
+        criterions = ['*py*', '*2*']
         all_needed = True
         expected = [os.path.join('testdir_5', 'pyfile2.py'),
                     os.path.join('testdir_5', 'python2.txt')]
@@ -52,7 +52,7 @@ class testDir(unittest.TestCase):
 
     def many_optional_criterions_test(self):
         dirname = 'testdir_6'
-        criterions = ['.*file1.*', '.*on2..*']
+        criterions = ['*file1*', '*on2?*']
         all_needed = False
         expected = [os.path.join('testdir_6', 'pyfile1.py'),
                     os.path.join('testdir_6', 'python2.txt'),
@@ -61,17 +61,9 @@ class testDir(unittest.TestCase):
 
     def ored_criterion_test(self):
         dirname = 'testdir_7'
-        criterions = ['.*le[2|3].*']
+        criterions = ['*le[23]*']
         all_needed = False
         expected = [os.path.join('testdir_7', 'pyfile2.py'),
                     os.path.join('testdir_7', 'pyfile3.pyc')]
         self.assertEqual(dir_files(dirname, criterions, all_needed), expected)
-
-
-if __name__ == '__main__':
-    print('test.main')
-    dirname = 'testdir_1'
-    criterions = ['myfile_1.py']
-    all_needed = True
-    dir_files(dirname, criterions, all_needed)
 
