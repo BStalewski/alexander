@@ -2,12 +2,15 @@
 Module used to find names imported from other modules.
 Analyzes code in file with regular expressions, does not import it.
 
-checks the following patterns:
-1) r'^\s*import.+?[^\\]$'
-2) r'^\s*from\s+[a-zA-Z._]+\s+import.+[^\\]$'
+At first removes comments and merges lines with continuation byte (\),
+then it finds the following patterns:
+1) r'^\s*import\s+.+?$'
+2) r'^\s*from\s+[a-zA-Z._0-9]+\s+import.+?$'
+and extracts modules' names from them.
 '''
 
 import re
+import argparse
 
 
 def scan_files(filepaths):
@@ -18,17 +21,16 @@ def scan_file(filepath):
     '''Return imported names by file specified by filepath.'''
     scanned_file = open(filepath)
     code = scanned_file.read()
-    clean_code = remove_comments(code)
+    no_comments_code = remove_comments(code)
+    clean_code = replace_cont_char(no_comments_code)
     return find_imports(clean_code)
-
-
 
 def remove_comments(code):
     '''Return code without comments.'''
     symbol = None
     no_comments_lines = []
 
-    for line in code:
+    for line in code.split('\n'):
         line_without_comments, symbol = remove_comments_from_line(line, symbol)
         no_comments_lines.append(line_without_comments)
 
@@ -39,8 +41,8 @@ def remove_comments_from_line(line, comment_symbol=None):
     comment symbol: \'\'\' or """ if this line is inside comment block,
     otherwise None.'''
     if comment_symbol:
-        result = find_first_symbol(line, [comment_symbol])
-        comment_symbol = None if result else comment_symbol
+        end_found = find_first_symbol(line, [comment_symbol])
+        comment_symbol = None if end_found else comment_symbol
         return ('', comment_symbol)
     else:
         try:
@@ -54,10 +56,9 @@ def remove_comments_from_line(line, comment_symbol=None):
         else:
             comment_symbol = symbol
             search_start = ind + len(symbol)
-            result = find_first_symbol(line[search_start:], [comment_symbol])
-            comment_symbol = None if result else comment_symbol
+            repeated = find_first_symbol(line[search_start:], [comment_symbol])
+            comment_symbol = None if repeated else comment_symbol
             return ('', comment_symbol)
-
 
 def find_first_symbol(line, symbols):
     '''Find first occurence of any of symbols in the line of the code.
@@ -70,31 +71,53 @@ def find_first_symbol(line, symbols):
         symbol_tuples.append((first_index, symbol))
 
     first_found = min(symbol_tuples)
-    if first_found[1] == len(line):
+    if first_found[0] == len(line):
         return None
     else:
         return first_found
 
-def find_imports(code):
-    '''Return list of modules that this module imports from. Use code without
-    comments, because there is possibility that the module may contain code
-    with commented imports or comments in the same line as import.
-    '''
-    module_imports = re.finditer(r'^\s*import.+?[^\\]$',
-                                 code, flags=re.MULTILINE|re.DOTALL)
-    # dodac dopasowanie jesli duzo \
-    from_imports = re.finditer(r'^\s*from\s+[a-zA-Z._]+\s+import.+[^\\]$',
-                               code, flags=re.MULTILINE|re.DOTALL)
-    imported_names = {get_import_names(import_str) for import_str in module_imports}
-    for from_str in from_imports:
-        imported_names |= get_from_import_names(from_str)
+def replace_cont_char(code):
+    '''Replace continuation characters with single space.'''
+    return re.sub(r'\\\n', ' ', code)
 
-    return imported_names
+def find_imports(code):
+    '''Return list of modules that this module imports from. Work on code
+       without comments and continuation characters.'''
+    module_imports = re.finditer(r'^\s*import\s+.+?$',
+                                 code, flags=re.MULTILINE|re.DOTALL)
+    from_imports = re.finditer(r'^\s*from\s+[a-zA-Z._0-9]+\s+import.+?$',
+                               code, flags=re.MULTILINE|re.DOTALL)
+
+    names = {get_from_import_names(stat.group()) for stat in from_imports}
+    for import_stat in module_imports:
+        names |= get_import_names(import_stat.group())
+
+    return sorted(names)
 
 def get_import_names(import_str):
-    '''Return list of module names from import statement.'''
-    pass
+    '''Return set of module names from import statement.'''
+    names = set()
+    import_cut_str = re.sub(r'^\s*import\s+', '', import_str)
+    import_parts = import_cut_str.split(',')
+    for part in import_parts:
+        clean_part = part.strip()
+        mod_name = clean_part.split()[0] if ' ' in clean_part else clean_part
+        names.add(mod_name)
+
+    return names
 
 def get_from_import_names(from_str):
-    '''Return list of module names from 'from import' statement.'''
-    pass
+    '''Return set of module names from 'from import' statement.'''
+    from_cut_str = re.sub(r'^\s*from\s+', '', from_str)
+    name = from_cut_str.split()[0]
+    return name
+
+if __name__ == '__main__':
+    descr = 'Pass paths to files to be checked which modules they import.'
+    parser = argparse.ArgumentParser(description=descr)
+    parser.add_argument('paths', metavar='PATH', nargs='+',
+                        help='paths to files to be checked')
+    args = parser.parse_args()
+    
+    print(scan_files(args.paths))
+
