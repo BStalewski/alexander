@@ -88,7 +88,9 @@ def find_imports(code):
     from_imports = re.finditer(r'^\s*from\s+[a-zA-Z._0-9]+\s+import.+?$',
                                code, flags=re.MULTILINE|re.DOTALL)
 
-    names = {get_from_import_names(stat.group()) for stat in from_imports}
+    names = set()
+    for from_stat in from_imports:
+        names |= get_from_import_names(from_stat.group())
     for import_stat in module_imports:
         names |= get_import_names(import_stat.group())
 
@@ -107,10 +109,14 @@ def get_import_names(import_str):
     return names
 
 def get_from_import_names(from_str):
-    '''Return set of module names from 'from import' statement.'''
+    '''Return set of module names from 'from import' statement
+       in the following form: from a import b, c -> {'a.b', 'a.c'}.'''
     from_cut_str = re.sub(r'^\s*from\s+', '', from_str)
-    name = from_cut_str.split()[0]
-    return name
+    import_cut_str = re.sub(r'\s+import\s+', ' ', from_cut_str)
+    as_cut_str = re.sub(r'\s+as\s+[a-zA-Z_0-9]+\s*', '', import_cut_str)
+    parts = as_cut_str.split()
+    from_part = parts[0]
+    return {from_part + '.' + what_part.strip(',') for what_part in parts[1:]}
 
 if __name__ == '__main__':
     descr = 'Pass paths to files to be checked which modules they import.'

@@ -16,7 +16,8 @@ class testDir(unittest.TestCase):
         expected = {
             'file1.py': [
                 'a1', 'a2', 'a3', 'a4', 'a5',
-                'b2', 'b4', 'b5', 'c5', 'd1', 'd2', 'd3'
+                'b2', 'b4', 'b5', 'c5',
+                'd1.x', 'd2.x', 'd2.y', 'd3.x', 'd3.y'
             ]
         }
         self.assertEqual(scan_files(filepaths), expected)
@@ -24,7 +25,10 @@ class testDir(unittest.TestCase):
     def cont_char_test(self):
         filepaths = ['file2.py']
         expected = {
-            'file2.py': ['a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'c3']
+            'file2.py': [
+                'a1', 'a2', 'a3', 'b1', 'b2', 'b3',
+                'c1.x', 'c2.y', 'c3.y', 'c3.y2'
+            ]
         }
         self.assertEqual(scan_files(filepaths), expected)
 
@@ -38,7 +42,10 @@ class testDir(unittest.TestCase):
     def whitespace_test(self):
         filepaths = ['file4.py']
         expected = {
-            'file4.py': ['a1', 'a2', 'a3', 'a4', 'b1', 'b3', 'c1', 'c2', 'c3']
+            'file4.py': [
+                'a1', 'a2', 'a3', 'a4', 'b1', 'b3',
+                'c1.x', 'c2.x', 'c3.x'
+            ]
         }
         self.assertEqual(scan_files(filepaths), expected)
 
@@ -47,9 +54,13 @@ class testDir(unittest.TestCase):
         expected = {
             'file1.py': [
                 'a1', 'a2', 'a3', 'a4', 'a5',
-                'b2', 'b4', 'b5', 'c5', 'd1', 'd2', 'd3'
+                'b2', 'b4', 'b5', 'c5',
+                'd1.x', 'd2.x', 'd2.y', 'd3.x', 'd3.y'
             ],
-            'file4.py': ['a1', 'a2', 'a3', 'a4', 'b1', 'b3', 'c1', 'c2', 'c3']
+            'file4.py': [
+                'a1', 'a2', 'a3', 'a4', 'b1', 'b3',
+                'c1.x', 'c2.x', 'c3.x'
+            ]
         }
         self.assertEqual(scan_files(filepaths), expected)
 
@@ -59,6 +70,6 @@ class testDir(unittest.TestCase):
         filepaths = [path1, path2]
         expected = {}
         expected[path1] = ['a1', 'b1']
-        expected[path2] = ['b1', 'c1']
+        expected[path2] = ['b1', 'c1.x']
         self.assertEqual(scan_files(filepaths), expected)
 
