@@ -116,7 +116,17 @@ def get_from_import_names(from_str):
     as_cut_str = re.sub(r'\s+as\s+[a-zA-Z_0-9]+\s*', '', import_cut_str)
     parts = as_cut_str.split()
     from_part = parts[0]
-    return {from_part + '.' + what_part.strip(',') for what_part in parts[1:]}
+    #return {from_part + '.' + what_part.strip(',') for what_part in parts[1:]}
+    return {get_module_name(from_part, what_part.strip(',')) for what_part in parts[1:]}
+
+def get_module_name(from_str, module_name_str):
+    '''Return module name from 'from import' given
+       from part and module/function name.'''
+    if from_str in ('.', '..'):
+        return from_str + module_name_str
+    else:
+        return from_str + '.' + module_name_str
+
 
 if __name__ == '__main__':
     descr = 'Pass paths to files to be checked which modules they import.'

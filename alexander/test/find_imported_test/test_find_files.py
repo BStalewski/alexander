@@ -64,6 +64,16 @@ class testDir(unittest.TestCase):
         }
         self.assertEqual(scan_files(filepaths), expected)
 
+    def project_files_test(self):
+        filepaths = ['file5.py']
+        expected = {
+            'file5.py': sorted([
+                '.a1', '.a2', '..d1.a3', '..d2.a4', '..d3.a5', '..d3.a6',
+                'd4.d5.d6.a7'
+            ])
+        }
+        self.assertEqual(scan_files(filepaths), expected)
+
     def nested_paths_test(self):
         path1 = os.path.join('dir_1', 'nested.py')
         path2 = os.path.join('dir_2', 'dir_2_1', 'double_nested.py')
