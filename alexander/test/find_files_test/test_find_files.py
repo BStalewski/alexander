@@ -64,6 +64,6 @@ class testDir(unittest.TestCase):
         criterions = ['*le[23]*']
         all_needed = False
         expected = [os.path.join('testdir_7', 'pyfile2.py'),
-                    os.path.join('testdir_7', 'pyfile3.pyc')]
+                    os.path.join('testdir_7', 'pyfile3.pyr')]
         self.assertEqual(dir_files(dirname, criterions, all_needed), expected)
 

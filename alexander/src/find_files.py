@@ -19,7 +19,7 @@ def dir_files(dirname, criterions, all_needed):
     correct_names = []
     full_criterions = translate_criterions(criterions)
     check_criterions(full_criterions)
-    all_names = os.listdir(dirname)
+    all_names = sorted(os.listdir(dirname))
     print('all_names', all_names)
     for name in all_names:
         full_path = create_path(dirname, name)
